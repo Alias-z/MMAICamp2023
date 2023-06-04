@@ -91,4 +91,4 @@ Testing finished successfully.
 ```
 
 ## Inference on test image and video
-![Inference on the test image](path/to/image.png)
+![Inference on the test image](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment1/Results/test_image.jpg)
