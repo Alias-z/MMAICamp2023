@@ -63,7 +63,29 @@ Testing finished successfully.
 
 Note: large learnig rate caused all COCO metrics to be 0.
 ```shell
-
+mim test mmpose Configs//rtmpose_ear.py --checkpoint \
+       Models//RTMPose//best_PCK_epoch_175.pth --gpus 1 
 ```
 
-updating...
+```shell
+Running per image evaluation...
+Evaluate annotation type *keypoints*
+DONE (t=0.01s).
+Accumulating evaluation results...
+DONE (t=0.00s).
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets= 20 ] =  0.719
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets= 20 ] =  1.000
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets= 20 ] =  0.897
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets= 20 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets= 20 ] =  0.719
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 20 ] =  0.755
+ Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets= 20 ] =  1.000
+ Average Recall     (AR) @[ IoU=0.75      | area=   all | maxDets= 20 ] =  0.929
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets= 20 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets= 20 ] =  0.755
+06/04 18:42:53 - mmengine - INFO - Evaluating PCKAccuracy (normalized by ``"bbox_size"``)...
+06/04 18:42:53 - mmengine - INFO - Evaluating AUC...
+06/04 18:42:53 - mmengine - INFO - Evaluating NME...
+06/04 18:42:53 - mmengine - INFO - Epoch(test) [2/2]    coco/AP: 0.718564  coco/AP .5: 1.000000  coco/AP .75: 0.897039  coco/AP (M): -1.000000  coco/AP (L): 0.718564  coco/AR: 0.754762  coco/AR .5: 1.000000  coco/AR .75: 0.928571  coco/AR (M): -1.000000  coco/AR (L): 0.754762  PCK: 0.968254  AUC: 0.112188  NME: 0.043449  data_time: 4.577252  time: 4.835264
+Testing finished successfully.
+```
