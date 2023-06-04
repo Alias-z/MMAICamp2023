@@ -57,4 +57,9 @@ DONE (t=0.03s).
 
 2.mmpose
 
+Note: large learnig rate caused all COCO metrics to be 0.
+```shell
+
+```
+
 updating...
