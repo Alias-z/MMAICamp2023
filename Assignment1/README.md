@@ -59,7 +59,7 @@ DONE (t=0.02s).
 Testing finished successfully.
 ```
 
-2.mmpose
+2. mmpose
 
 Note: large learnig rate caused all COCO metrics to be 0.
 ```shell
@@ -89,3 +89,5 @@ DONE (t=0.00s).
 06/04 18:42:53 - mmengine - INFO - Epoch(test) [2/2]    coco/AP: 0.718564  coco/AP .5: 1.000000  coco/AP .75: 0.897039  coco/AP (M): -1.000000  coco/AP (L): 0.718564  coco/AR: 0.754762  coco/AR .5: 1.000000  coco/AR .75: 0.928571  coco/AR (M): -1.000000  coco/AR (L): 0.754762  PCK: 0.968254  AUC: 0.112188  NME: 0.043449  data_time: 4.577252  time: 4.835264
 Testing finished successfully.
 ```
+
+## Inference on test image and video
