@@ -1,29 +1,4 @@
-_base_ = ['rtmdet_m_8xb32-300e_coco.py']
-
-checkpoint = 'https://download.openmmlab.com/mmdetection/v3.0/rtmdet/cspnext_rsb_pretrain/cspnext-m_8xb256-rsb-a1-600e_in1k-ecb3bbd9.pth'  # noqa
-load_from = 'Configs//rtmdet_m_8xb32-100e_coco-obj365-person-235e8209.pth'
-work_dir = 'Models//RTMdet//'
-
-fp16 = dict(loss_scale='dynamic') 
-
-dataset_type = 'CocoDataset'
-data_root = 'Ear210_Keypoint_Dataset_coco/'
-metainfo = {'classes': ('ear',)}
-NUM_CLASSES = len(metainfo['classes'])
-
-
-batch_size = 16
-n_gpus = 1
-original_batch_size = 32
-original_lr = 0.004
-original_n_gpus = 8
-lr = original_lr * (n_gpus / original_n_gpus) * (batch_size / original_batch_size)
-
-early_stopping_patience = 50
-max_epochs = 300
-stage2_num_epochs = 20
-
-
+default_scope = 'mmdet'
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=200),
@@ -31,54 +6,55 @@ default_hooks = dict(
     checkpoint=dict(
         type='CheckpointHook',
         interval=9999999999,
+        max_keep_ckpts=1,
         by_epoch=True,
         save_last=False,
         save_best='coco/bbox_mAP',
-        rule='greater',
-        max_keep_ckpts=1),
+        rule='greater'),
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+    visualization=dict(type='DetVisualizationHook'),
     early_stopping=dict(
-        type='EarlyStoppingHook', 
+        type='EarlyStoppingHook',
         monitor='coco/bbox_mAP',
         rule='greater',
-        patience=early_stopping_patience),
-    sampler_seed=dict(type='DistSamplerSeedHook'),
-    visualization=dict(type='DetVisualizationHook'))
-
-    
+        patience=100))
+env_cfg = dict(
+    cudnn_benchmark=False,
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    dist_cfg=dict(backend='nccl'))
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='DetLocalVisualizer',
+    vis_backends=[dict(type='LocalVisBackend')],
+    name='visualizer')
 log_processor = dict(type='LogProcessor', window_size=50, by_epoch=True)
-
-
+log_level = 'INFO'
+load_from = 'Models//RTMdet//best_coco_bbox_mAP_epoch_110.pth'
 resume = False
-
 train_cfg = dict(
     type='EpochBasedTrainLoop',
-    max_epochs=max_epochs,
+    max_epochs=300,
     val_interval=1,
-    dynamic_intervals=[(max_epochs - stage2_num_epochs, 1)])
-    
-
-param_scheduler = [
-    dict(
-        type='LinearLR', start_factor=1e-05, by_epoch=False, begin=0,
-        end=1000),
-    dict(
-        type='CosineAnnealingLR',
-        eta_min=0.0002,
-        begin=150,
-        end=300,
-        T_max=150,
-        by_epoch=True,
-        convert_to_iter_based=True)
-]
-
-
+    dynamic_intervals=[(280, 1)])
+val_cfg = dict(type='ValLoop')
+test_cfg = dict(type='TestLoop')
+param_scheduler = dict(
+    type='ReduceOnPlateauLR',
+    monitor='coco/bbox_mAP',
+    rule='greater',
+    factor=0.1,
+    patience=20,
+    by_epoch=True,
+    verbose=True)
 optim_wrapper = dict(
     type='OptimWrapper',
-    optimizer=dict(type='AdamW', lr=lr, weight_decay=0.05),
+    optimizer=dict(type='AdamW', lr=0.0005, weight_decay=0.05),
     paramwise_cfg=dict(
         norm_decay_mult=0, bias_decay_mult=0, bypass_duplicate=True))
-        
-
+auto_scale_lr = dict(enable=False, base_batch_size=16)
+dataset_type = 'CocoDataset'
+data_root = 'Ear210_Keypoint_Dataset_coco/'
+backend_args = None
 train_pipeline = [
     dict(type='LoadImageFromFile', backend_args=None),
     dict(type='LoadAnnotations', with_bbox=True),
@@ -100,8 +76,6 @@ train_pipeline = [
         pad_val=(114, 114, 114)),
     dict(type='PackDetInputs')
 ]
-
-
 test_pipeline = [
     dict(type='LoadImageFromFile', backend_args=None),
     dict(type='Resize', scale=(640, 640), keep_ratio=True),
@@ -111,18 +85,15 @@ test_pipeline = [
         meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
                    'scale_factor'))
 ]
-
-
 train_dataloader = dict(
-    batch_size=batch_size,
+    batch_size=32,
     num_workers=10,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
     batch_sampler=None,
     dataset=dict(
         type='CocoDataset',
-        data_root=data_root,
-        metainfo=metainfo,
+        data_root='Ear210_Keypoint_Dataset_coco/',
         ann_file='train_coco.json',
         data_prefix=dict(img='images/'),
         filter_cfg=dict(filter_empty_gt=True, min_size=32),
@@ -149,20 +120,18 @@ train_dataloader = dict(
                 pad_val=(114, 114, 114)),
             dict(type='PackDetInputs')
         ],
-        backend_args=None),
+        backend_args=None,
+        metainfo=dict(classes=('ear', ))),
     pin_memory=True)
-    
-
 val_dataloader = dict(
-    batch_size=batch_size,
+    batch_size=32,
     num_workers=10,
     persistent_workers=True,
     drop_last=False,
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type='CocoDataset',
-        data_root=data_root,
-        metainfo=metainfo,
+        data_root='Ear210_Keypoint_Dataset_coco/',
         ann_file='val_coco.json',
         data_prefix=dict(img='images/'),
         test_mode=True,
@@ -177,24 +146,47 @@ val_dataloader = dict(
                 meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
                            'scale_factor'))
         ],
-        backend_args=None))
-        
-
-test_dataloader = val_dataloader
-
-
+        backend_args=None,
+        metainfo=dict(classes=('ear', ))))
+test_dataloader = dict(
+    batch_size=32,
+    num_workers=10,
+    persistent_workers=True,
+    drop_last=False,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type='CocoDataset',
+        data_root='Ear210_Keypoint_Dataset_coco/',
+        ann_file='val_coco.json',
+        data_prefix=dict(img='images/'),
+        test_mode=True,
+        pipeline=[
+            dict(type='LoadImageFromFile', backend_args=None),
+            dict(type='Resize', scale=(640, 640), keep_ratio=True),
+            dict(
+                type='Pad', size=(640, 640),
+                pad_val=dict(img=(114, 114, 114))),
+            dict(
+                type='PackDetInputs',
+                meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
+                           'scale_factor'))
+        ],
+        backend_args=None,
+        metainfo=dict(classes=('ear', ))))
 val_evaluator = dict(
     type='CocoMetric',
-    ann_file=data_root+'val_coco.json',
+    ann_file='Ear210_Keypoint_Dataset_coco/val_coco.json',
     metric=['bbox'],
     format_only=False,
     backend_args=None,
     proposal_nums=(100, 1, 10))
-    
-test_evaluator = val_evaluator
-    
-    
-    
+test_evaluator = dict(
+    type='CocoMetric',
+    ann_file='Ear210_Keypoint_Dataset_coco/val_coco.json',
+    metric=['bbox'],
+    format_only=False,
+    backend_args=None,
+    proposal_nums=(100, 1, 10))
 tta_model = dict(
     type='DetTTAModel',
     tta_cfg=dict(nms=dict(type='nms', iou_threshold=0.6), max_per_img=100))
@@ -238,8 +230,6 @@ tta_pipeline = [
                          'scale_factor', 'flip', 'flip_direction')
                     }]])
 ]
-
-
 model = dict(
     type='RTMDet',
     data_preprocessor=dict(
@@ -267,7 +257,7 @@ model = dict(
         act_cfg=dict(type='SiLU', inplace=True)),
     bbox_head=dict(
         type='RTMDetSepBNHead',
-        num_classes=NUM_CLASSES,
+        num_classes=1,
         in_channels=192,
         stacked_convs=2,
         feat_channels=192,
@@ -311,8 +301,10 @@ train_pipeline_stage2 = [
     dict(type='Pad', size=(640, 640), pad_val=dict(img=(114, 114, 114))),
     dict(type='PackDetInputs')
 ]
-
-
+max_epochs = 300
+stage2_num_epochs = 20
+base_lr = 0.004
+interval = 10
 custom_hooks = [
     dict(
         type='EMAHook',
@@ -340,3 +332,16 @@ custom_hooks = [
             dict(type='PackDetInputs')
         ])
 ]
+checkpoint = 'https://download.openmmlab.com/mmdetection/v3.0/rtmdet/cspnext_rsb_pretrain/cspnext-m_8xb256-rsb-a1-600e_in1k-ecb3bbd9.pth'
+work_dir = 'Models//RTMdet//'
+fp16 = dict(loss_scale='dynamic')
+metainfo = dict(classes=('ear', ))
+NUM_CLASSES = 1
+batch_size = 32
+n_gpus = 1
+original_batch_size = 32
+original_lr = 0.004
+original_n_gpus = 8
+lr = 0.0005
+early_stopping_patience = 100
+launcher = 'none'
