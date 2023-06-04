@@ -92,5 +92,5 @@ Testing finished successfully.
 
 ## Inference on test image and video
 ![Inference on the test image](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment1/Results/test_image.jpg)
-![Inference on the test video](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment1/Results/test_video.mp4)
+![Inference on the test video](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment1/Results/test_video.gif)
 
