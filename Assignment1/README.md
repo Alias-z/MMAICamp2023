@@ -91,3 +91,4 @@ Testing finished successfully.
 ```
 
 ## Inference on test image and video
+![Inference on the test image](path/to/image.png)
