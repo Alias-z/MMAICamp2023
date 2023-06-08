@@ -19,7 +19,7 @@ mim install "mmpretrain[multimodal]>=1.0.0rc8"
 
 2. config ResNet-50
 ```python
-! mim search mmpretrain --model resnet
+!mim search mmpretrain --model resnet
 !mim download mmpretrain --config resnetv1c50_8xb32_in1k --dest Configs
 ```
 
