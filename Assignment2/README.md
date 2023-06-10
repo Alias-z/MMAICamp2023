@@ -96,7 +96,7 @@ Loads checkpoint by local backend from path: Models//ResNet50//best_accuracy_top
 Testing finished successfully.
 ```
 
-## Inference on test image and video
+## Inference on test images
 ```python
 import cv2
 from matplotlib import pyplot as plt
