@@ -24,7 +24,7 @@ mim install "mmdet>=3.0.0rc6"
 !mim download mmdet --config rtmdet_tiny_8xb32-300e_coco --dest Configs
 ```
 
-3. modify config file accordingly and train ResNet-50
+3. modify config file accordingly and train RTMDet-tiny
 ```shell
 mim train mmdet Configs//rtmdet_drinks.py
 ```
