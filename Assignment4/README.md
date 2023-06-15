@@ -229,6 +229,6 @@ result = inference_model(model, 'Test//IMG_9858.jpg')
 vis_iamge = show_result_pyplot(model, 'Test//IMG_9858.jpg', result, out_file='Test//IMG_9858_result.jpg')
 ```
 
-![result_0.jpg](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment3/Results/result_0.jpg))
+![IMG_9858.jpg](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment4/Test/IMG_9858.jpg))
 
-![result_1.jpg](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment3/Results/result_1.jpg)
+![IMG_9858_result.jpg](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment4/Test/IMG_9858_result.jpg)
