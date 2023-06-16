@@ -74,35 +74,36 @@ for idx, control in enumerate(controls):
 
 4. finally, we could show our dear customer a poster with our design
 ```python
-import cv2
-import numpy as np
-import mmcv
-from mmengine import Config
-from PIL import Image
+def imread_rgb(image_dir):
+    """cv2.imread + BRG2RGB """
+    image = cv2.cvtColor(cv2.imread(image_dir), cv2.COLOR_BGR2RGB)
+    return image
 
-from mmagic.registry import MODELS
-from mmagic.utils import register_all_modules
+unfurnished = imread_rgb('Results//test2image.png')
+edge = imread_rgb('Results//control_0.png')
+furnished = imread_rgb('Results//sample_0.png')
 
-register_all_modules()
+# concatenate images horizontally (along the column axis)
+image = cv2.hconcat([unfurnished, edge, furnished])
 
-cfg = Config.fromfile('mmagic//configs//controlnet//controlnet-canny.py')
-controlnet = MODELS.build(cfg.model).cuda()
+# create a black image with the same width as the concatenated image for writing text
+text_image = np.zeros((100, image.shape[1], 3), np.uint8)
 
-control_img = mmcv.imread('Results//test2image.png')
-control = cv2.Canny(control_img, 100, 200)
-control = control[:, :, None]
-control = np.concatenate([control] * 3, axis=2)
-control = Image.fromarray(control)
+# define font, scale, color, thickness, and other properties.
+font = cv2.FONT_HERSHEY_SIMPLEX
+font_scale = 2; font_color = (255, 255, 255); line_type = 2
+text = 'here is your furnished room!'
+(text_width, text_height) = cv2.getTextSize(text, font, font_scale, line_type)[0]
+text_x = (text_image.shape[1] - text_width) // 2
+text_y = (text_image.shape[0] + text_height) // 2
 
-prompt = 'A fully furnished room with colorful wallpapers'
 
-output_dict = controlnet.infer(prompt, control=control)
-samples = output_dict['samples']
-for idx, sample in enumerate(samples):
-    sample.save(f'Results//sample_{idx}.png')
-controls = output_dict['controls']
-for idx, control in enumerate(controls):
-    control.save(f'Results//control_{idx}.png')
+cv2.putText(text_image, 
+            text, (text_x, text_y),
+            font,  font_scale, font_color, line_type)
+
+poster = cv2.vconcat([image, text_image])
+cv2.imwrite('Results//poster.jpg', cv2.cvtColor(poster, cv2.COLOR_RGB2BGR))
 ```
 ![poster.jpg](https://github.com/Alias-z/mmcamp2023/blob/main/Assignment5/Results/poster.jpg)
 
